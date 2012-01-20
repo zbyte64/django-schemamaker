@@ -3,11 +3,11 @@ from django.contrib.contenttypes.models import ContentType
 
 from schema_specifications import default_schema_specification as registry
 from utils import prep_for_kwargs
-from models import SchemaEntry
+from models import SchemaEntry, FieldEntry
 
 import dockit
 
-class BaseFieldSchema(dockit.Schema):
+class BaseFieldSchema(FieldEntry):
     verbose_name = dockit.CharField(blank=True)
     blank = dockit.BooleanField(default=True)
     null = dockit.BooleanField(default=True)
@@ -27,7 +27,7 @@ class BaseField(object):
     def get_admin_view(self, **kwargs):
         from admin import FieldDesignerFragmentView
         kwargs['field_spec'] = self
-        return FieldDesignerFragmentView(**kwargs)
+        return FieldDesignerFragmentView.as_view(**kwargs)
 
 class BooleanField(BaseField):
     field = dockit.BooleanField
@@ -205,4 +205,15 @@ class SchemaField(BaseField):
         return self.field(**kwargs)
 
 registry.register_field('SchemaField', SchemaField)
+
+class ComplexListField(BaseField):
+    schema = SchemaEntry
+    field = dockit.ListField
+    
+    def create_field(self, data):
+        schema = data.get_schema()
+        kwargs = {'schema':dockit.SchemaField(schema)}
+        return self.field(**kwargs)
+
+registry.register_field('ComplexListField', ComplexListField)
 

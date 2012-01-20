@@ -1,9 +1,32 @@
-from dockit.admin.views import SingleObjectFragmentView
+from dockit.admin.views import SingleObjectFragmentView, CreateView, UpdateView, BaseFragmentViewMixin
 from dockit.forms import DocumentForm
+import dockit
 
 from schemamaker.schema_specifications import default_schema_specification
+from schemamaker.models import FieldEntry
 
-class FieldProxyFragmentView(SingleObjectFragmentView):
+from fields import FieldEntryField
+
+class FieldsMixin(object):
+    def formfield_for_field(self, prop, field, **kwargs):
+        if isinstance(prop, dockit.ListField) and isinstance(prop.schema, dockit.SchemaField):
+            schema = prop.schema.schema
+            if schema == FieldEntry:
+                #return a custom field to selecting field entry types
+                field = FieldEntryField
+                kwargs['dotpath'] = self.dotpath()
+                if self.next_dotpath():
+                    kwargs['required'] = False
+                return field(**kwargs)
+        return BaseFragmentViewMixin.formfield_for_field(self, prop, field, **kwargs)
+
+class CreateDocumentDesignView(FieldsMixin, CreateView):
+    pass
+
+class UpdateDocumentDesignView(FieldsMixin, UpdateView):
+    pass
+
+class FieldProxyFragmentView(FieldsMixin, SingleObjectFragmentView):
     def get_field_type_value(self):
         if not hasattr(self, 'object'):
             if 'pk' in self.kwargs:
@@ -33,16 +56,16 @@ class FieldProxyFragmentView(SingleObjectFragmentView):
             return view(request, *args, **kwargs)
         return super(FieldProxyFragmentView, self).dispatch(request, *args, **kwargs)
 
-class FieldDesignerFragmentView(SingleObjectFragmentView):
+class FieldDesignerFragmentView(FieldsMixin, SingleObjectFragmentView):
     '''
     default admin handler for designing fields
     '''
     field_spec = None
     
-    def _generate_form_class(self, schema):
+    def _generate_form_class(self, field_schema):
         class CustomDocumentForm(DocumentForm):
             class Meta:
-                schema = schema
+                schema = field_schema
                 document = self.document
                 form_field_callback = self.formfield_for_field
                 dotpath = self.dotpath() or None
@@ -50,4 +73,6 @@ class FieldDesignerFragmentView(SingleObjectFragmentView):
     
     def get_form_class(self):
         return self._generate_form_class(self.field_spec.schema)
+
+
 
