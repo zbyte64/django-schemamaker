@@ -1,0 +1,6 @@
+*~
+*.py[cdo]
+/bin
+*.egg-info
+/include
+/lib
