@@ -1,5 +1,6 @@
 from dockit.admin.views import SingleObjectFragmentView, CreateView, UpdateView, BaseFragmentViewMixin
 from dockit.forms import DocumentForm
+from dockit.schema.exceptions import DotPathNotFound
 import dockit
 
 from schemamaker.schema_specifications import default_schema_specification
@@ -9,15 +10,15 @@ from fields import FieldEntryField
 
 class FieldsMixin(object):
     def formfield_for_field(self, prop, field, **kwargs):
-        if isinstance(prop, dockit.ListField) and isinstance(prop.schema, dockit.SchemaField):
-            schema = prop.schema.schema
-            if schema == FieldEntry:
+        if isinstance(prop, dockit.ListField) and isinstance(prop.schema, dockit.GenericSchemaField):
+            #schema = prop.schema.schema
+            #if issubclass(schema, FieldEntry):
                 #return a custom field to selecting field entry types
-                field = FieldEntryField
-                kwargs['dotpath'] = self.dotpath()
-                if self.next_dotpath():
-                    kwargs['required'] = False
-                return field(**kwargs)
+            field = FieldEntryField
+            kwargs['dotpath'] = self.dotpath()
+            if self.next_dotpath():
+                kwargs['required'] = False
+            return field(**kwargs)
         return BaseFragmentViewMixin.formfield_for_field(self, prop, field, **kwargs)
 
 class CreateDocumentDesignView(FieldsMixin, CreateView):
@@ -28,15 +29,11 @@ class UpdateDocumentDesignView(FieldsMixin, UpdateView):
 
 class FieldProxyFragmentView(FieldsMixin, SingleObjectFragmentView):
     def get_field_type_value(self):
-        if not hasattr(self, 'object'):
-            if 'pk' in self.kwargs:
-                self.object = self.get_object()
-            else:
-                self.object = None
-        if self.object:
+        obj = self.get_temporary_store()
+        if obj:
             try:
-                frag = self.object.dot_path(self.dotpath())
-            except:
+                frag = obj.dot_notation(self.dotpath())
+            except DotPathNotFound:
                 pass
             else:
                 if frag.field_type:

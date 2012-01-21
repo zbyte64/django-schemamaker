@@ -3,6 +3,8 @@ from dockit.schema.schema import create_schema
 
 from django.utils.datastructures import SortedDict
 
+from properties import GenericFieldEntryField
+
 class FieldEntry(dockit.Schema):
     '''
     This schema is extended by others to define a field entry
@@ -39,9 +41,9 @@ class DesignMixin(object):
         return schema
 
 class SchemaEntry(FieldEntry, DesignMixin):
-    fields = dockit.ListField(dockit.SchemaField(FieldEntry))
+    fields = dockit.ListField(GenericFieldEntryField())
 
 class DocumentDesign(dockit.Document, DesignMixin):
     #inherit_from = schema.ReferenceField('DocumentDesign')
-    fields = dockit.ListField(dockit.SchemaField(FieldEntry))
+    fields = dockit.ListField(GenericFieldEntryField())
 
