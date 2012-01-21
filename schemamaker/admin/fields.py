@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 from dockit.admin.fields import DotPathField, DotPathWidget
 
 from schemamaker.schema_specifications import default_schema_specification
+from schemamaker.properties import GenericFieldEntryField
 
 from urllib import urlencode
 
@@ -40,4 +41,10 @@ class FieldEntryWidget(DotPathWidget):
 
 class FieldEntryField(DotPathField):
     widget = FieldEntryWidget
-
+    
+    def to_python(self, value):
+        value = super(FieldEntryField, self).to_python(value)
+        ret = list()
+        for val in value:
+            ret.append(GenericFieldEntryField().to_python(val))
+        return ret

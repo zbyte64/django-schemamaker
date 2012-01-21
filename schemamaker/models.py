@@ -45,5 +45,9 @@ class SchemaEntry(FieldEntry, DesignMixin):
 
 class DocumentDesign(dockit.Document, DesignMixin):
     #inherit_from = schema.ReferenceField('DocumentDesign')
+    title = dockit.CharField()
     fields = dockit.ListField(GenericFieldEntryField())
+    
+    def __unicode__(self):
+        return self.title or ''
 
