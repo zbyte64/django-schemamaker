@@ -1,5 +1,5 @@
-from django.forms.util import flatatt
-from django.utils.safestring import mark_safe
+from django.utils.encoding import force_unicode
+from django.utils.html import escape
 
 from dockit.admin.fields import DotPathField, DotPathWidget
 
@@ -24,20 +24,10 @@ class FieldEntryWidget(DotPathWidget):
         name = '[fragment-passthrough]%s' % urlencode(data)
         return u'<select name="%s">%s</select>' % (name, '\n'.join(options))
     
-    def render_button(self, dotpath, edit=False):
-        if edit:
-            label = 'edit'
-        else:
-            label = 'add'
-        data = {'next_dotpath':dotpath}
-        name = '[fragment]%s' % urlencode(data)
-        submit_attrs = self.build_attrs({}, type=self.input_type, name=name, value=label)
-        if edit:
-            drop_down = ''
-        else:
-            drop_down = self.render_type_dropdown(dotpath)
-        
-        return mark_safe(u'%s<input%s />' % (drop_down, flatatt(submit_attrs)))
+    def get_label(self, dotpath, value=None):
+        if value:
+            return escape(force_unicode(value))
+        return self.render_type_dropdown(dotpath)
 
 class FieldEntryField(DotPathField):
     widget = FieldEntryWidget
