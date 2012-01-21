@@ -22,6 +22,8 @@ class BaseField(object):
     
     def create_field(self, data):
         kwargs = prep_for_kwargs(data)
+        kwargs.pop('field_type', None)
+        kwargs.pop('name', None)
         return self.field(**kwargs)
     
     def get_admin_view(self, **kwargs):

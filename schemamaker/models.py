@@ -31,6 +31,7 @@ class DesignMixin(object):
         fields = SortedDict()
         spec = self.get_specification()
         for field_entry in self.fields:
+            assert field_entry.name
             field = field_entry.get_field(spec)
             fields[field_entry.name] = field
         return fields
