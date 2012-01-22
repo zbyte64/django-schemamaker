@@ -8,12 +8,12 @@ from models import SchemaEntry, FieldEntry
 import dockit
 
 class BaseFieldSchema(FieldEntry):
-    verbose_name = dockit.CharField(blank=True)
+    verbose_name = dockit.CharField(blank=True, null=True)
     blank = dockit.BooleanField(default=True)
     null = dockit.BooleanField(default=True)
     
-    default = dockit.CharField(blank=True)
-    help_text = dockit.CharField(blank=True)
+    default = dockit.CharField(blank=True, null=True)
+    help_text = dockit.CharField(blank=True, null=True)
 
 
 class BaseField(object):
@@ -24,6 +24,8 @@ class BaseField(object):
         kwargs = prep_for_kwargs(data)
         kwargs.pop('field_type', None)
         kwargs.pop('name', None)
+        if kwargs.get('verbose_name', None) == '':
+            del kwargs['verbose_name']
         return self.field(**kwargs)
     
     def get_admin_view(self, **kwargs):
