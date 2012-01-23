@@ -39,15 +39,27 @@ class DesignMixin(object):
     def get_schema(self):
         fields = self.get_fields()
         schema = create_schema('temp_schema', fields, module='schemamaker.models')
+        
+        def __unicode__(instance):
+            if not self.object_label:
+                return repr(instance)
+            try:
+                return self.object_label % instance
+            except (KeyError, TypeError):
+                return repr(instance)
+        
+        schema.__unicode__ = __unicode__
         return schema
 
 class SchemaEntry(FieldEntry, DesignMixin):
     fields = dockit.ListField(GenericFieldEntryField())
+    object_label = dockit.CharField(blank=True)
 
 class DocumentDesign(dockit.Document, DesignMixin):
     #inherit_from = schema.ReferenceField('DocumentDesign')
     title = dockit.CharField()
     fields = dockit.ListField(GenericFieldEntryField())
+    object_label = dockit.CharField(blank=True)
     
     def __unicode__(self):
         return self.title or ''
