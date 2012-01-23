@@ -1,6 +1,6 @@
 from dockit.schema.fields import GenericSchemaField
 
-from schema_specifications import default_schema_specification
+from schemamaker.schema_specifications import default_schema_specification
 
 class GenericFieldEntryField(GenericSchemaField):
     def to_primitive(self, val):

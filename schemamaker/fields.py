@@ -49,6 +49,12 @@ class CharField(BaseField):
 
 registry.register_field('CharField', CharField)
 
+class TextField(BaseField):
+    schema = CharFieldSchema
+    field = dockit.TextField
+
+registry.register_field('TextField', TextField)
+
 class ChoiceOptionSchema(dockit.Schema):
     label = dockit.CharField()
     value = dockit.CharField()
