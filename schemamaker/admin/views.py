@@ -1,30 +1,10 @@
-from dockit.admin.views import SingleObjectFragmentView, CreateView, UpdateView, BaseFragmentViewMixin
+from dockit.admin.views import SingleObjectFragmentView
 from dockit.forms import DocumentForm
 from dockit.schema.exceptions import DotPathNotFound
-import dockit
 
 from schemamaker.schema_specifications import default_schema_specification
-from schemamaker.properties import GenericFieldEntryField
 
-from fields import FieldEntryField
-
-class FieldsMixin(object):
-    def formfield_for_field(self, prop, field, **kwargs):
-        if isinstance(prop, dockit.ListField) and isinstance(prop.schema, GenericFieldEntryField):
-            field = FieldEntryField
-            kwargs['dotpath'] = self.dotpath()
-            if self.next_dotpath():
-                kwargs['required'] = False
-            return field(**kwargs)
-        return BaseFragmentViewMixin.formfield_for_field(self, prop, field, **kwargs)
-
-class CreateDocumentDesignView(FieldsMixin, CreateView):
-    pass
-
-class UpdateDocumentDesignView(FieldsMixin, UpdateView):
-    pass
-
-class FieldProxyFragmentView(FieldsMixin, SingleObjectFragmentView):
+class FieldProxyFragmentView(SingleObjectFragmentView):
     def get_field_type_value(self):
         obj = self.get_temporary_store()
         if obj:
@@ -51,7 +31,7 @@ class FieldProxyFragmentView(FieldsMixin, SingleObjectFragmentView):
             return view(request, *args, **kwargs)
         return super(FieldProxyFragmentView, self).dispatch(request, *args, **kwargs)
 
-class FieldDesignerFragmentView(FieldsMixin, SingleObjectFragmentView):
+class FieldDesignerFragmentView(SingleObjectFragmentView):
     '''
     default admin handler for designing fields
     '''

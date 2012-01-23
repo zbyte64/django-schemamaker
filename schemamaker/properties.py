@@ -1,19 +1,20 @@
-from dockit.schema.fields import GenericSchemaField
+from dockit.schema.fields import TypedSchemaField
 
 from schemamaker.schema_specifications import default_schema_specification
 
-class GenericFieldEntryField(GenericSchemaField):
-    def to_primitive(self, val):
-        if hasattr(val, 'to_primitive'):
-            return val.to_primitive(val)
-        return super(GenericFieldEntryField, self).to_primitive(val)
+class GenericFieldEntryField(TypedSchemaField):
+    def __init__(self, schemas=default_schema_specification.fields, field_name='field_type', **kwargs):
+        super(GenericFieldEntryField, self).__init__(schemas, field_name, **kwargs)
     
-    def to_python(self, val, parent=None):
-        if self.is_instance(val):
-            return val
-        field_type = val['field_type']
-        field_spec = default_schema_specification.fields[field_type]
-        return field_spec.schema.to_python(val, parent=parent)
+    def lookup_schema(self, key):
+        return self.schemas[key].schema
+    
+    def get_schema_choices(self):
+        keys = self.schemas.keys()
+        return zip(keys, keys)
+    
+    def set_schema_type(self, val):
+        return #this is done by the admin
     
     def is_instance(self, val):
         from models import FieldEntry

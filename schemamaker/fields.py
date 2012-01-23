@@ -243,7 +243,7 @@ class ComplexListField(BaseField):
     
     def create_field(self, data):
         schema = data.get_schema()
-        kwargs = {'schema':dockit.SchemaField(schema)}
+        kwargs = {'subfield':dockit.SchemaField(schema)}
         return self.field(**kwargs)
     
     def get_scaffold_example(self, data, context, varname):
