@@ -19,6 +19,7 @@ class BaseFieldSchema(FieldEntry):
 class BaseField(object):
     field = None
     schema = BaseFieldSchema
+    scaffold_template_name = 'schemamaker/scaffold/field.html'
     
     def create_field(self, data):
         kwargs = prep_for_kwargs(data)
@@ -32,6 +33,12 @@ class BaseField(object):
         from admin import FieldDesignerFragmentView
         kwargs['field_spec'] = self
         return FieldDesignerFragmentView.as_view(**kwargs)
+    
+    def get_scaffold_example(self, data, context, varname):
+        context['attr'] = data['name']
+        context['varname'] = varname
+        template = get_template(self.scaffold_template_name)
+        return template.render(context)
 
 class BooleanField(BaseField):
     field = dockit.BooleanField
@@ -118,7 +125,13 @@ class FileField(BaseField):
     field = dockit.FileField
 
 registry.register_field('FileField', FileField)
+'''
+class ImageField(BaseField):
+    field = dockit.ImageField
+    scaffold_template_name = 'schemamaker/scaffold/image.html'
 
+registry.register_field('ImageField', ImageField)
+'''
 class FloatFieldSchema(BaseFieldSchema):
     max_value = dockit.IntegerField(blank=True, null=True)
     min_value = dockit.IntegerField(blank=True, null=True)
@@ -208,22 +221,37 @@ registry.register_field('ModelReferenceField', ModelReferenceField)
 class SchemaField(BaseField):
     schema = SchemaEntry
     field = dockit.SchemaField
+    scaffold_template_name = 'schemamaker/scaffold/schema.html'
     
     def create_field(self, data):
         schema = data.get_schema()
         kwargs = {'schema':schema}
         return self.field(**kwargs)
+    
+    def get_scaffold_example(self, data, context, varname):
+        fields = list()
+        #TODO populate fields
+        context['fields'] = fields
+        return super(SchemaField, self).get_scaffold_example(data, context, varname)
 
 registry.register_field('SchemaField', SchemaField)
 
 class ComplexListField(BaseField):
     schema = SchemaEntry
     field = dockit.ListField
+    saffold_template_name = 'schemamaker/scaffold/list.html'
     
     def create_field(self, data):
         schema = data.get_schema()
         kwargs = {'schema':dockit.SchemaField(schema)}
         return self.field(**kwargs)
+    
+    def get_scaffold_example(self, data, context, varname):
+        schema = data.get_schema()
+        #TODO
+        context['subschema'] = ''
+        context['subvarname'] = 'subitem'
+        return super(ComplexListField, self).get_scaffold_example(data, context, varname)
 
 registry.register_field('ComplexListField', ComplexListField)
 
