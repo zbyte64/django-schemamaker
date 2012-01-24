@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from schemamaker.schema_specifications import default_schema_specification as registry
 from utils import prep_for_kwargs
 from models import SchemaEntry, FieldEntry
+from properties import GenericFieldEntryField
 
 import dockit
 
@@ -254,4 +255,18 @@ class ComplexListField(BaseField):
         return super(ComplexListField, self).get_scaffold_example(data, context, varname)
 
 registry.register_field('ComplexListField', ComplexListField)
+
+class ListFieldSchema(BaseFieldSchema):
+    subfield = GenericFieldEntryField()
+
+class ListField(BaseField):
+    schema = ListFieldSchema
+    field = dockit.ListField
+    
+    def create_field(self, data):
+        subfield = data.subfield.get_field(registry)
+        kwargs = {'subfield':subfield}
+        return self.field(**kwargs)
+
+registry.register_field('ListField', ListField)
 

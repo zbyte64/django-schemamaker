@@ -18,6 +18,9 @@ class FieldProxyFragmentView(SingleObjectFragmentView):
         if 'field_type' in self.request.GET:
             return self.request.GET['field_type']
     
+    #TODO
+    #if schema==TypedSchemaForm and not field_type is found, then render a simple get drop down form of the options?
+    
     def dispatch(self, request, *args, **kwargs):
         self.request = request
         self.args = args

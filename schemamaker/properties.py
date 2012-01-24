@@ -17,5 +17,7 @@ class GenericFieldEntryField(TypedSchemaField):
         return #this is done by the admin
     
     def is_instance(self, val):
+        if val is None:
+            return True
         from models import FieldEntry
         return isinstance(val, FieldEntry)
