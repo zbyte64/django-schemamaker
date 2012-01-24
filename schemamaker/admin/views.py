@@ -13,7 +13,7 @@ class FieldProxyFragmentView(SingleObjectFragmentView):
             except DotPathNotFound:
                 pass
             else:
-                if frag.field_type:
+                if frag and frag.field_type:
                     return frag.field_type
         if 'field_type' in self.request.GET:
             return self.request.GET['field_type']
@@ -38,13 +38,16 @@ class FieldDesignerFragmentView(SingleObjectFragmentView):
     field_spec = None
     field_type = None
     
-    def _generate_form_class(self, field_schema):
+    def get_schema(self):
+        return self.field_spec.schema
+    
+    def _generate_form_class(self):
         view_cls = self
         
         class CustomDocumentForm(DocumentForm):
             class Meta:
-                schema = field_schema
                 document = self.document
+                schema = self.get_schema()
                 form_field_callback = self.formfield_for_field
                 dotpath = self.dotpath() or None
                 exclude = ['field_type']
@@ -53,9 +56,5 @@ class FieldDesignerFragmentView(SingleObjectFragmentView):
                 obj = super(CustomDocumentForm, self)._inner_save(*args, **kwargs)
                 obj.field_type = view_cls.field_type
                 return obj
-        
         return CustomDocumentForm
-    
-    def get_form_class(self):
-        return self._generate_form_class(self.field_spec.schema)
 

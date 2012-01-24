@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 
-from schema_specifications import default_schema_specification as registry
+from schemamaker.schema_specifications import default_schema_specification as registry
 from utils import prep_for_kwargs
 from models import SchemaEntry, FieldEntry
 
