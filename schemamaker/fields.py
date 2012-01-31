@@ -1,10 +1,6 @@
-from django import forms
 from django.contrib.contenttypes.models import ContentType
 
-from schemamaker.schema_specifications import default_schema_specification as registry
-from utils import prep_for_kwargs
 from models import SchemaEntry, FieldEntry
-from properties import GenericFieldEntryField
 
 import dockit
 
@@ -17,19 +13,6 @@ class BaseFieldEntry(FieldEntry):
     help_text = dockit.CharField(blank=True, null=True)
     
     scaffold_template_name = 'schemamaker/scaffold/field.html'
-    field_class = None
-    
-    def get_field_kwargs(self):
-        kwargs = self.to_primitive(self)
-        kwargs.pop('field_type', None)
-        kwargs.pop('name', None)
-        if kwargs.get('verbose_name', None) == '':
-            del kwargs['verbose_name']
-        return kwargs
-    
-    def create_field(self):
-        kwargs = self.get_field_kwargs()
-        return self.field_class(**kwargs)
     
     class Meta:
         proxy = True

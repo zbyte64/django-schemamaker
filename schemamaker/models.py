@@ -11,11 +11,22 @@ class FieldEntry(dockit.Schema):
     '''
     name = dockit.SlugField()
     
+    field_class = None
+    
     def __unicode__(self):
         return u'%s (%s)' % (self.name, self.field_type)
     
+    def get_field_kwargs(self):
+        kwargs = self.to_primitive(self)
+        kwargs.pop('field_type', None)
+        kwargs.pop('name', None)
+        if kwargs.get('verbose_name', None) == '':
+            del kwargs['verbose_name']
+        return kwargs
+    
     def create_field(self):
-        raise NotImplementedError
+        kwargs = self.get_field_kwargs()
+        return self.field_class(**kwargs)
     
     def get_scaffold_example(self, context, varname):
         raise NotImplementedError
