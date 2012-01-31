@@ -3,36 +3,32 @@ from dockit.schema.schema import create_schema
 
 from django.utils.datastructures import SortedDict
 
-from properties import GenericFieldEntryField
+#from properties import GenericFieldEntryField
 
 class FieldEntry(dockit.Schema):
     '''
     This schema is extended by others to define a field entry
     '''
     name = dockit.SlugField()
-    field_type = dockit.CharField()#editable=False)
     
     def __unicode__(self):
         return u'%s (%s)' % (self.name, self.field_type)
     
-    def get_field_spec(self, spec):
-        return spec.fields[self.field_type]
+    def create_field(self):
+        raise NotImplementedError
     
-    def get_field(self, spec):
-        field_spec = self.get_field_spec(spec)
-        return field_spec.create_field(self)
+    def get_scaffold_example(self, context, varname):
+        raise NotImplementedError
+    
+    class Meta:
+        typed_field = 'field_type'
 
 class DesignMixin(object):
-    def get_specification(self):
-        from schema_specifications import default_schema_specification
-        return default_schema_specification
-    
     def get_fields(self):
         fields = SortedDict()
-        spec = self.get_specification()
         for field_entry in self.fields:
             assert field_entry.name
-            field = field_entry.get_field(spec)
+            field = field_entry.create_field()
             fields[field_entry.name] = field
         return fields
     
@@ -52,13 +48,13 @@ class DesignMixin(object):
         return schema
 
 class SchemaEntry(FieldEntry, DesignMixin):
-    fields = dockit.ListField(GenericFieldEntryField())
+    fields = dockit.ListField(dockit.SchemaField(FieldEntry))
     object_label = dockit.CharField(blank=True)
 
 class DocumentDesign(dockit.Document, DesignMixin):
     #inherit_from = schema.ReferenceField('DocumentDesign')
     title = dockit.CharField()
-    fields = dockit.ListField(GenericFieldEntryField())
+    fields = dockit.ListField(dockit.SchemaField(FieldEntry))
     object_label = dockit.CharField(blank=True)
     
     def __unicode__(self):

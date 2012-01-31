@@ -8,60 +8,50 @@ from properties import GenericFieldEntryField
 
 import dockit
 
-class BaseFieldSchema(FieldEntry):
+class BaseFieldEntry(FieldEntry):
     verbose_name = dockit.CharField(blank=True, null=True)
     blank = dockit.BooleanField(default=True)
     null = dockit.BooleanField(default=True)
     
     default = dockit.CharField(blank=True, null=True)
     help_text = dockit.CharField(blank=True, null=True)
-
-
-class BaseField(object):
-    field = None
-    schema = BaseFieldSchema
-    scaffold_template_name = 'schemamaker/scaffold/field.html'
     
-    def create_field(self, data):
-        kwargs = prep_for_kwargs(data)
+    scaffold_template_name = 'schemamaker/scaffold/field.html'
+    field_class = None
+    
+    def get_field_kwargs(self):
+        kwargs = self.to_primitive(self)
         kwargs.pop('field_type', None)
         kwargs.pop('name', None)
         if kwargs.get('verbose_name', None) == '':
             del kwargs['verbose_name']
-        return self.field(**kwargs)
+        return kwargs
     
-    def get_admin_view(self, **kwargs):
-        from admin import FieldDesignerFragmentView
-        kwargs['field_spec'] = self
-        return FieldDesignerFragmentView.as_view(**kwargs)
+    def create_field(self):
+        kwargs = self.get_field_kwargs()
+        return self.field_class(**kwargs)
     
-    def get_scaffold_example(self, data, context, varname):
-        context['attr'] = data['name']
-        context['varname'] = varname
-        template = get_template(self.scaffold_template_name)
-        return template.render(context)
+    class Meta:
+        proxy = True
 
-class BooleanField(BaseField):
-    field = dockit.BooleanField
 
-registry.register_field('BooleanField', BooleanField)
+class BooleanField(BaseFieldEntry):
+    field_class = dockit.BooleanField
+    
+    class Meta:
+        typed_key = 'BooleanField'
 
-class CharFieldSchema(BaseFieldSchema):
-    pass
-    #max_length = dockit.IntegerField(blank=True, null=True)
-    #min_length = dockit.IntegerField(blank=True, null=True)
+class CharField(BaseFieldEntry):
+    field_class = dockit.CharField
+    
+    class Meta:
+        typed_key = 'CharField'
 
-class CharField(BaseField):
-    schema = CharFieldSchema
-    field = dockit.CharField
-
-registry.register_field('CharField', CharField)
-
-class TextField(BaseField):
-    schema = CharFieldSchema
-    field = dockit.TextField
-
-registry.register_field('TextField', TextField)
+class TextField(BaseFieldEntry):
+    field_class = dockit.TextField
+    
+    class Meta:
+        typed_key = 'TextField'
 
 class ChoiceOptionSchema(dockit.Schema):
     label = dockit.CharField()
@@ -70,98 +60,91 @@ class ChoiceOptionSchema(dockit.Schema):
     def __unicode__(self):
         return self.label
 
-class ChoiceFieldSchema(BaseFieldSchema):
+class ChoiceField(BaseFieldEntry):
     choices = dockit.ListField(dockit.SchemaField(ChoiceOptionSchema))
-
-class ChoiceField(BaseField):
-    schema = ChoiceFieldSchema
-    field = dockit.CharField
+    field_class = dockit.CharField
     
-    def create_field(self, data):
-        kwargs = prep_for_kwargs(data)
+    def get_field_kwargs(self):
+        kwargs = super(ChoiceField, self).get_field_kwargs()
         kwargs['choices'] = [(entry['value'], entry['label']) for entry in kwargs['choices']]
-        return self.field(**kwargs)
+        return kwargs
+    
+    class Meta:
+        typed_key = 'ChoiceField'
 
-registry.register_field('ChoiceField', ChoiceField)
+class MultipleChoiceField(ChoiceField):
+    def create_field(self):
+        kwargs = self.get_field_kwargs()
+        return dockit.ListField(self.field_class(**kwargs))
+    
+    class Meta:
+        typed_key = 'MultipleChoiceField'
 
-class MultipleChoiceField(BaseField):
-    schema = ChoiceFieldSchema
-    field = lambda **kwargs: dockit.ListField(dockit.CharField(**kwargs))
+class DateField(BaseFieldEntry):
+    field_class = dockit.DateField
+    
+    class Meta:
+        typed_key = 'DateField'
 
-    def create_field(self, data):
-        kwargs = prep_for_kwargs(data)
-        kwargs['choices'] = [(entry['value'], entry['label']) for entry in kwargs['choices']]
-        return self.field(**kwargs)
+class DateTimeField(BaseFieldEntry):
+    field_class = dockit.DateTimeField
+    
+    class Meta:
+        typed_key = 'DateTimeField'
 
-registry.register_field('MultipleChoiceField', MultipleChoiceField)
-
-class DateField(BaseField):
-    field = dockit.DateField
-
-registry.register_field('DateField', DateField)
-
-class DateTimeField(BaseField):
-    field = dockit.DateTimeField
-
-registry.register_field('DateTimeField', DateTimeField)
-
-class DecimalFieldSchema(BaseFieldSchema):
+class DecimalField(BaseFieldEntry):
     max_value = dockit.IntegerField(blank=True, null=True)
     min_value = dockit.IntegerField(blank=True, null=True)
     max_digits = dockit.IntegerField(blank=True, null=True)
     decimal_places = dockit.IntegerField(blank=True, null=True)
+    
+    #TODO dockit.DecimalField
+    field_class = dockit.DecimalField
 
-class DecimalField(BaseField):
-    schema = DecimalFieldSchema
-    field = forms.DecimalField
+    class Meta:
+        typed_key = 'DecimalField'
 
-registry.register_field('DecimalField', DecimalField)
+class EmailField(BaseFieldEntry):
+    field_class = dockit.EmailField
+    
+    class Meta:
+        typed_key = 'EmailField'
 
-class EmailField(CharField):
-    field = dockit.EmailField
+class FileField(BaseFieldEntry):
+    field_class = dockit.FileField
+    
+    class Meta:
+        typed_key = 'FileField'
 
-registry.register_field('EmailField', EmailField)
-
-class FileField(BaseField):
-    field = dockit.FileField
-
-registry.register_field('FileField', FileField)
-'''
-class ImageField(BaseField):
-    field = dockit.ImageField
+class ImageField(BaseFieldEntry):
+    #TODO dockit.ImageField
+    field_class = dockit.FileField
     scaffold_template_name = 'schemamaker/scaffold/image.html'
 
-registry.register_field('ImageField', ImageField)
-'''
-class FloatFieldSchema(BaseFieldSchema):
+    class Meta:
+        typed_key = 'ImageField'
+
+class FloatField(BaseFieldEntry):
+    max_value = dockit.IntegerField(blank=True, null=True)
+    min_value = dockit.IntegerField(blank=True, null=True)
+    
+    class Meta:
+        typed_key = 'FloatField'
+
+class IntegerField(BaseFieldEntry):
     max_value = dockit.IntegerField(blank=True, null=True)
     min_value = dockit.IntegerField(blank=True, null=True)
 
-class FloatField(BaseField):
-    schema = FloatFieldSchema
-    field = dockit.FloatField
+    field_class = dockit.IntegerField
+    
+    class Meta:
+        typed_key = 'IntegerField'
 
-registry.register_field('FloatField', FloatField)
-'''
-class ImageField(BaseField):
-    field = dockit.ImageField
+class IPAddressField(BaseFieldEntry):
+    field_class = dockit.IPAddressField
 
-registry.register_field('ImageField', ImageField)
-'''
-class IntegerFieldSchema(BaseFieldSchema):
-    max_value = dockit.IntegerField(blank=True, null=True)
-    min_value = dockit.IntegerField(blank=True, null=True)
-
-class IntegerField(BaseField):
-    schema = IntegerFieldSchema
-    field = dockit.IntegerField
-
-registry.register_field('IntegerField', IntegerField)
-
-class IPAddressField(BaseField):
-    field = dockit.IPAddressField
-
-registry.register_field('IPAddressField', IPAddressField)
+    class Meta:
+        typed_key = 'IPAddressField'
 '''
 class NullBooleanField(BaseField):
     field = dockit.NullBooleanField
@@ -178,15 +161,17 @@ class RegexField(BaseField):
 
 registry.register_field('RegexField', RegexField)
 '''
-class SlugField(BaseField):
-    field = dockit.SlugField
+class SlugField(BaseFieldEntry):
+    field_class = dockit.SlugField
 
-registry.register_field('SlugField', SlugField)
+    class Meta:
+        typed_key = 'SlugField'
 
-class TimeField(BaseField):
-    field = dockit.TimeField
+class TimeField(BaseFieldEntry):
+    field_class = dockit.TimeField
 
-registry.register_field('TimeField', TimeField)
+    class Meta:
+        typed_key = 'TimeField'
 '''
 class URLFieldSchema(BaseFieldSchema):
     max_length = dockit.IntegerField(blank=True, null=True)
@@ -200,34 +185,32 @@ class URLField(BaseField):
 
 registry.register_field('URLField', URLField)
 '''
-class ModelReferenceFieldSchema(BaseFieldSchema):
+class ModelReferenceField(BaseFieldEntry):
     model = dockit.ModelReferenceField(ContentType)
 
-class ModelReferenceField(BaseField):
-    schema = ModelReferenceFieldSchema
-    field = dockit.ModelReferenceField
+    field_class = dockit.ModelReferenceField
     
-    def create_field(self, data):
-        kwargs = prep_for_kwargs(data)
+    def get_field_kwargs(self):
+        kwargs = super(ModelReferenceField, self).get_field_kwargs()
         ct_id = kwargs.pop('model')
         if not isinstance(ct_id, (long, int)):
             model = ct_id
         else:
             model = ContentType.objects.get(pk=ct_id).model_class()
         kwargs['queryset'] = model.objects.all()
-        return self.field(**kwargs)
+        return kwargs
 
-registry.register_field('ModelReferenceField', ModelReferenceField)
+    class Meta:
+        typed_key = 'ModelReferenceField'
 
-class SchemaField(BaseField):
-    schema = SchemaEntry
-    field = dockit.SchemaField
+class SchemaField(SchemaEntry):
+    field_class = dockit.SchemaField
     scaffold_template_name = 'schemamaker/scaffold/schema.html'
     
-    def create_field(self, data):
-        schema = data.get_schema()
+    def get_field_kwargs(self):
+        schema = self.get_schema()
         kwargs = {'schema':schema}
-        return self.field(**kwargs)
+        return kwargs
     
     def get_scaffold_example(self, data, context, varname):
         fields = list()
@@ -235,17 +218,17 @@ class SchemaField(BaseField):
         context['fields'] = fields
         return super(SchemaField, self).get_scaffold_example(data, context, varname)
 
-registry.register_field('SchemaField', SchemaField)
+    class Meta:
+        typed_key = 'SchemaField'
 
-class ComplexListField(BaseField):
-    schema = SchemaEntry
-    field = dockit.ListField
+class ComplexListField(SchemaEntry):
+    field_class = dockit.ListField
     saffold_template_name = 'schemamaker/scaffold/list.html'
     
-    def create_field(self, data):
-        schema = data.get_schema()
+    def get_field_kwargs(self):
+        schema = self.get_schema()
         kwargs = {'subfield':dockit.SchemaField(schema)}
-        return self.field(**kwargs)
+        return kwargs
     
     def get_scaffold_example(self, data, context, varname):
         schema = data.get_schema()
@@ -254,19 +237,18 @@ class ComplexListField(BaseField):
         context['subvarname'] = 'subitem'
         return super(ComplexListField, self).get_scaffold_example(data, context, varname)
 
-registry.register_field('ComplexListField', ComplexListField)
+    class Meta:
+        typed_key = 'ComplexListField'
 
-class ListFieldSchema(BaseFieldSchema):
-    subfield = GenericFieldEntryField()
-
-class ListField(BaseField):
-    schema = ListFieldSchema
-    field = dockit.ListField
+class ListField(FieldEntry):
+    subfield = dockit.SchemaField(FieldEntry)
+    field_class = dockit.ListField
     
-    def create_field(self, data):
-        subfield = data.subfield.get_field(registry)
+    def get_field_kwargs(self):
+        subfield = self.subfield.create_field()
         kwargs = {'subfield':subfield}
-        return self.field(**kwargs)
+        return kwargs
 
-registry.register_field('ListField', ListField)
+    class Meta:
+        typed_key = 'ListField'
 

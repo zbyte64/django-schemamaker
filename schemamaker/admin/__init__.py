@@ -1,3 +1,3 @@
 from admin import DocumentDesignAdmin
-from views import FieldDesignerFragmentView
+#from views import FieldDesignerFragmentView
 
