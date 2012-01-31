@@ -61,6 +61,9 @@ class DesignMixin(object):
 class SchemaEntry(FieldEntry, DesignMixin):
     fields = dockit.ListField(dockit.SchemaField(FieldEntry))
     object_label = dockit.CharField(blank=True)
+    
+    class Meta:
+        proxy = True
 
 class DocumentDesign(dockit.Document, DesignMixin):
     #inherit_from = schema.ReferenceField('DocumentDesign')
