@@ -108,15 +108,17 @@ class ImageField(BaseFieldEntry):
         typed_key = 'ImageField'
 
 class FloatField(BaseFieldEntry):
-    max_value = dockit.IntegerField(blank=True, null=True)
-    min_value = dockit.IntegerField(blank=True, null=True)
+    field_class = dockit.FloatField
+    #max_value = dockit.IntegerField(blank=True, null=True)
+    #min_value = dockit.IntegerField(blank=True, null=True)
     
     class Meta:
         typed_key = 'FloatField'
 
 class IntegerField(BaseFieldEntry):
-    max_value = dockit.IntegerField(blank=True, null=True)
-    min_value = dockit.IntegerField(blank=True, null=True)
+    field_class = dockit.IntegerField
+    #max_value = dockit.IntegerField(blank=True, null=True)
+    #min_value = dockit.IntegerField(blank=True, null=True)
 
     field_class = dockit.IntegerField
     
