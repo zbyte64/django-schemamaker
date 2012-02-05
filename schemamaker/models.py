@@ -3,8 +3,6 @@ from dockit.schema.schema import create_schema
 
 from django.utils.datastructures import SortedDict
 
-#from properties import GenericFieldEntryField
-
 class FieldEntry(dockit.Schema):
     '''
     This schema is extended by others to define a field entry
