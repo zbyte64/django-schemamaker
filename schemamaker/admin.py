@@ -11,7 +11,7 @@ class AdminAwareSchemaAdmin(SchemaAdmin):
             form_class = self.schema.get_admin_form_class()
             if form_class:
                 return form_class
-        return super(AdminAwareDocumentAdmin, self).get_form_class(request, obj)
+        return super(AdminAwareSchemaAdmin, self).get_form_class(request, obj)
 
 class AdminAwareDocumentAdmin(DocumentAdmin):
     default_schema_admin = AdminAwareSchemaAdmin
