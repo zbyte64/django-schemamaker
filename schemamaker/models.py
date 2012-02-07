@@ -3,6 +3,8 @@ from dockit.schema.schema import create_schema
 
 from django.utils.datastructures import SortedDict
 
+from properties import SchemaDesignChoiceField
+
 class FieldEntry(dockit.Schema):
     '''
     This schema is extended by others to define a field entry
@@ -46,7 +48,15 @@ class DesignMixin(object):
     
     def get_schema(self):
         fields = self.get_fields()
-        schema = create_schema('temp_schema', fields, module='schemamaker.models')
+        if self.inherit_from:
+            parent = self._meta.fields['inherit_from'].get_schema(self.inherit_from)
+            if parent:
+                parents = (parent, )
+                schema = create_schema('temp_schema', fields, module='schemamaker.models', parents=parents)
+            else:
+                schema = create_schema('temp_schema', fields, module='schemamaker.models')
+        else:
+            schema = create_schema('temp_schema', fields, module='schemamaker.models')
         
         def __unicode__(instance):
             if not self.object_label:
@@ -60,6 +70,7 @@ class DesignMixin(object):
         return schema
 
 class SchemaEntry(FieldEntry, DesignMixin):
+    inherit_from = SchemaDesignChoiceField(blank=True)
     fields = dockit.ListField(dockit.SchemaField(FieldEntry))
     object_label = dockit.CharField(blank=True)
     
@@ -67,8 +78,8 @@ class SchemaEntry(FieldEntry, DesignMixin):
         proxy = True
 
 class DocumentDesign(dockit.Document, DesignMixin):
-    #inherit_from = schema.ReferenceField('DocumentDesign')
     title = dockit.CharField()
+    inherit_from = SchemaDesignChoiceField(blank=True)
     fields = dockit.ListField(dockit.SchemaField(FieldEntry))
     object_label = dockit.CharField(blank=True)
     
