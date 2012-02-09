@@ -1,0 +1,2 @@
+recursive-include schemamaker/templates *
+recursive-exclude test_environment *
