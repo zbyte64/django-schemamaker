@@ -18,6 +18,16 @@ class BaseFieldEntry(FieldEntry):
         proxy = True
 
 
+class ListFieldMixin(object):
+    list_field_class = dockit.ListField
+    
+    def get_list_field_kwargs(self):
+        raise NotImplementedError
+    
+    def create_field(self):
+        kwargs = self.get_list_field_kwargs()
+        return self.list_field_class(**kwargs)
+
 class BooleanField(BaseFieldEntry):
     field_class = dockit.BooleanField
     
@@ -30,11 +40,27 @@ class CharField(BaseFieldEntry):
     class Meta:
         typed_key = 'CharField'
 
+class ListCharField(ListFieldMixin, CharField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListCharField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListCharField'
+
 class TextField(BaseFieldEntry):
     field_class = dockit.TextField
     
     class Meta:
         typed_key = 'TextField'
+
+class ListTextField(ListFieldMixin, TextField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListTextField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListTextField'
 
 class ChoiceOptionSchema(dockit.Schema):
     label = dockit.CharField()
@@ -55,6 +81,14 @@ class ChoiceField(BaseFieldEntry):
     class Meta:
         typed_key = 'ChoiceField'
 
+class ListChoiceField(ListFieldMixin, ChoiceField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListChoiceField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListChoiceField'
+
 class MultipleChoiceField(ChoiceField):
     def create_field(self):
         kwargs = self.get_field_kwargs()
@@ -69,11 +103,27 @@ class DateField(BaseFieldEntry):
     class Meta:
         typed_key = 'DateField'
 
+class ListDateField(ListFieldMixin, DateField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListDateField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListDateField'
+
 class DateTimeField(BaseFieldEntry):
     field_class = dockit.DateTimeField
     
     class Meta:
         typed_key = 'DateTimeField'
+
+class ListDateTimeField(ListFieldMixin, DateTimeField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListDateTimeField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListDateTimeField'
 
 class DecimalField(BaseFieldEntry):
     max_value = dockit.IntegerField(blank=True, null=True)
@@ -81,11 +131,18 @@ class DecimalField(BaseFieldEntry):
     max_digits = dockit.IntegerField(blank=True, null=True)
     decimal_places = dockit.IntegerField(blank=True, null=True)
     
-    #TODO dockit.DecimalField
     field_class = dockit.DecimalField
 
     class Meta:
         typed_key = 'DecimalField'
+
+class ListDecimalField(ListFieldMixin, DecimalField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListDecimalField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListDecimalField'
 
 class EmailField(BaseFieldEntry):
     field_class = dockit.EmailField
@@ -93,11 +150,27 @@ class EmailField(BaseFieldEntry):
     class Meta:
         typed_key = 'EmailField'
 
+class ListEmailField(ListFieldMixin, EmailField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListEmailField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListEmailField'
+
 class FileField(BaseFieldEntry):
     field_class = dockit.FileField
     
     class Meta:
         typed_key = 'FileField'
+
+class ListFileField(ListFieldMixin, FileField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListFileField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListFileField'
 
 class ImageField(BaseFieldEntry):
     #TODO dockit.ImageField
@@ -107,6 +180,14 @@ class ImageField(BaseFieldEntry):
     class Meta:
         typed_key = 'ImageField'
 
+class ListImageField(ListFieldMixin, ImageField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListImageField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListImageField'
+
 class FloatField(BaseFieldEntry):
     field_class = dockit.FloatField
     #max_value = dockit.IntegerField(blank=True, null=True)
@@ -114,6 +195,14 @@ class FloatField(BaseFieldEntry):
     
     class Meta:
         typed_key = 'FloatField'
+
+class ListFloatField(ListFieldMixin, FloatField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListFloatField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListFloatField'
 
 class IntegerField(BaseFieldEntry):
     field_class = dockit.IntegerField
@@ -125,11 +214,21 @@ class IntegerField(BaseFieldEntry):
     class Meta:
         typed_key = 'IntegerField'
 
+class ListIntegerField(ListFieldMixin, IntegerField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListIntegerField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListIntegerField'
+
+
 class IPAddressField(BaseFieldEntry):
     field_class = dockit.IPAddressField
 
     class Meta:
         typed_key = 'IPAddressField'
+
 '''
 class NullBooleanField(BaseField):
     field = dockit.NullBooleanField
@@ -152,11 +251,28 @@ class SlugField(BaseFieldEntry):
     class Meta:
         typed_key = 'SlugField'
 
+class ListSlugField(ListFieldMixin, SlugField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListSlugField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListSlugField'
+
 class TimeField(BaseFieldEntry):
     field_class = dockit.TimeField
 
     class Meta:
         typed_key = 'TimeField'
+
+class ListTimeField(ListFieldMixin, TimeField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListTimeField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListTimeField'
+
 '''
 class URLFieldSchema(BaseFieldSchema):
     max_length = dockit.IntegerField(blank=True, null=True)
@@ -187,6 +303,14 @@ class ModelReferenceField(BaseFieldEntry):
 
     class Meta:
         typed_key = 'ModelReferenceField'
+
+class ListModelReferenceField(ListFieldMixin, ModelReferenceField):
+    def get_list_field_kwargs(self):
+        subfield = super(ListModelReferenceField, self).create_field()
+        return {'subfield': subfield}
+
+    class Meta:
+        typed_key = 'ListModelReferenceField'
 
 class SchemaField(SchemaEntry):
     field_class = dockit.SchemaField
@@ -224,7 +348,7 @@ class ComplexListField(SchemaEntry):
 
     class Meta:
         typed_key = 'ComplexListField'
-
+'''
 class ListField(FieldEntry):
     subfield = dockit.SchemaField(FieldEntry)
     field_class = dockit.ListField
@@ -236,4 +360,4 @@ class ListField(FieldEntry):
 
     class Meta:
         typed_key = 'ListField'
-
+'''
