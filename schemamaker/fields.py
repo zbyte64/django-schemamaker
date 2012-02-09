@@ -42,7 +42,7 @@ class CharField(BaseFieldEntry):
 
 class ListCharField(ListFieldMixin, CharField):
     def get_list_field_kwargs(self):
-        subfield = super(ListCharField, self).create_field()
+        subfield = CharField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -56,7 +56,7 @@ class TextField(BaseFieldEntry):
 
 class ListTextField(ListFieldMixin, TextField):
     def get_list_field_kwargs(self):
-        subfield = super(ListTextField, self).create_field()
+        subfield = TextField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -83,7 +83,7 @@ class ChoiceField(BaseFieldEntry):
 
 class ListChoiceField(ListFieldMixin, ChoiceField):
     def get_list_field_kwargs(self):
-        subfield = super(ListChoiceField, self).create_field()
+        subfield = ChoiceField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -105,7 +105,7 @@ class DateField(BaseFieldEntry):
 
 class ListDateField(ListFieldMixin, DateField):
     def get_list_field_kwargs(self):
-        subfield = super(ListDateField, self).create_field()
+        subfield = DateField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -119,7 +119,7 @@ class DateTimeField(BaseFieldEntry):
 
 class ListDateTimeField(ListFieldMixin, DateTimeField):
     def get_list_field_kwargs(self):
-        subfield = super(ListDateTimeField, self).create_field()
+        subfield = DateTimeField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -138,7 +138,7 @@ class DecimalField(BaseFieldEntry):
 
 class ListDecimalField(ListFieldMixin, DecimalField):
     def get_list_field_kwargs(self):
-        subfield = super(ListDecimalField, self).create_field()
+        subfield = DecimalField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -152,7 +152,7 @@ class EmailField(BaseFieldEntry):
 
 class ListEmailField(ListFieldMixin, EmailField):
     def get_list_field_kwargs(self):
-        subfield = super(ListEmailField, self).create_field()
+        subfield = EmailField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -166,7 +166,7 @@ class FileField(BaseFieldEntry):
 
 class ListFileField(ListFieldMixin, FileField):
     def get_list_field_kwargs(self):
-        subfield = super(ListFileField, self).create_field()
+        subfield = FileField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -182,7 +182,7 @@ class ImageField(BaseFieldEntry):
 
 class ListImageField(ListFieldMixin, ImageField):
     def get_list_field_kwargs(self):
-        subfield = super(ListImageField, self).create_field()
+        subfield = ImageField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -198,7 +198,7 @@ class FloatField(BaseFieldEntry):
 
 class ListFloatField(ListFieldMixin, FloatField):
     def get_list_field_kwargs(self):
-        subfield = super(ListFloatField, self).create_field()
+        subfield = FloatField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -216,7 +216,7 @@ class IntegerField(BaseFieldEntry):
 
 class ListIntegerField(ListFieldMixin, IntegerField):
     def get_list_field_kwargs(self):
-        subfield = super(ListIntegerField, self).create_field()
+        subfield = IntegerField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -253,7 +253,7 @@ class SlugField(BaseFieldEntry):
 
 class ListSlugField(ListFieldMixin, SlugField):
     def get_list_field_kwargs(self):
-        subfield = super(ListSlugField, self).create_field()
+        subfield = SlugField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -267,7 +267,7 @@ class TimeField(BaseFieldEntry):
 
 class ListTimeField(ListFieldMixin, TimeField):
     def get_list_field_kwargs(self):
-        subfield = super(ListTimeField, self).create_field()
+        subfield = TimeField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
@@ -298,7 +298,7 @@ class ModelReferenceField(BaseFieldEntry):
             model = ct_id
         else:
             model = ContentType.objects.get(pk=ct_id).model_class()
-        kwargs['queryset'] = model.objects.all()
+        kwargs['model'] = model
         return kwargs
 
     class Meta:
@@ -306,7 +306,7 @@ class ModelReferenceField(BaseFieldEntry):
 
 class ListModelReferenceField(ListFieldMixin, ModelReferenceField):
     def get_list_field_kwargs(self):
-        subfield = super(ListModelReferenceField, self).create_field()
+        subfield = ModelReferenceField.create_field(self)
         return {'subfield': subfield}
 
     class Meta:
